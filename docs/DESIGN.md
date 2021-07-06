@@ -17,6 +17,7 @@ reasonble to includee when targetting such a limited environment as the AVM.
 
 Unsupported Go Language features:
 
+* init functions
 * goroutines
 * channels
 * defer

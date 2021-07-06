@@ -1,0 +1,15 @@
+#pragma version 4
+// jump to main loop
+b main
+
+// subroutine
+my_subroutine:
+// implement subroutine code
+// with the two args
+retsub
+
+main:
+int 1
+int 5
+callsub my_subroutine
+return
