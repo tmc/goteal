@@ -80,6 +80,13 @@ func (b *Builder) convertSSAInstructionToTEAL(result *teal.Program, i ssa.Instru
 	case *ssa.BinOp:
 		result.AppendLine(fmt.Sprintf("%v", i.Op))
 	case *ssa.Call:
+		for _, arg := range i.Call.Args {
+			if c, ok := arg.(*ssa.Const); ok {
+				result.AppendLine(fmt.Sprintf("%s %s", arg.Type(), c.Value.ExactString()))
+			} else {
+				result.AppendLine(fmt.Sprintf(" // err: unknoown arg type %T", arg))
+			}
+		}
 		result.AppendLine(fmt.Sprintf("callsub %s", i.Common().Value.Name()))
 	case *ssa.Return:
 		if i.Parent().Name() == "main" {
