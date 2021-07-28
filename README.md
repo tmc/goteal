@@ -18,10 +18,22 @@ goteal takes a Go program that follows a few constraints (see below) and transpi
 ## Constraints
 
 A [TEAL](https://developer.algorand.org/docs/reference/teal/specification/) program must exit with
-an integer value that indicates whether or not the transaction should proceed (zero for should-not-proceed,  >0 for should-proceed)` signature in Go programs `goteal` expects a package that is being compiled to TEAL to expose the following interface:
+an integer value that indicates whether or not the transaction should proceed (zero for should-not-proceed,  >0 for should-proceed). `goteal` expects a package that is being compiled to TEAL to expose the following interface:
 
 ```go
 
-func Contract() int {}
+func Contract(globals types.Globals, gtxn types.GroupTransaction, txn types.Transaction) (int,
+error)
 ```
+
+Where if any non-nil error is returned the program will halt (and reject the transaction).
+
+## Interface
+
+When an Algorand Smart Contract is executing there are several impoortant sources of context:
+
+* globals - contains network-wide information including values of current global configuration
+  parameters.
+* txn - The current Transaction.
+* gtxn - The current Transaction Group (a Transaction in Algorand may be part of a group).
 
