@@ -1,6 +1,8 @@
 # goteal
 
-goteal compiles Go programs into [AVM](https://developer.algorand.org/articles/introducing-algorand-virtual-machine-avm-09-release/)/[TEAL](https://developer.algorand.org/docs/reference/teal/specification/) programs.
+goteal enables writing Smart Contracts for Algorand in the Go programming language.
+
+goteal achieves this by compiling Go programs into [AVM](https://developer.algorand.org/articles/introducing-algorand-virtual-machine-avm-09-release/)/[TEAL](https://developer.algorand.org/docs/reference/teal/specification/) programs.
 
 
 ## Why goteal
