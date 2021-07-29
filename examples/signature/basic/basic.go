@@ -9,8 +9,8 @@ import (
 // ExpectedReceiver is the expected recipient address.
 const ExpectedReceiver = "ZZAF5ARA4MEC5PVDOP64JM5O5MQST63Q2KOY2FLYFLXXD3PFSNJJBYAFZM"
 
-func Contract(globals types.Globals, txn types.Txn, gtxn types.GroupTxn) (int, error) {
-	isPayment := txn.TypeEnum == types.TxnTypePayment
+func Contract(globals types.Globals, txn types.Transaction, gtxn types.TxGroup) (int, error) {
+	isPayment := txn.TypeEnum == types.PaymentTx
 	isSingleTx := globals.GroupSize == 1
 	isCorrectReceiver := txn.Receiver == ExpectedReceiver
 	noCloseOutAddr := txn.CloseRemainderTo == globals.ZeroAddress
