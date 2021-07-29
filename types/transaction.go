@@ -1,9 +1,12 @@
 package types
 
-// Txn is the current transaction.
-type Txn struct {
+// Address encodes a 32 byte address.
+type Address string
+
+// Transaction is the current transaction that an Algorand Smart Contract is executing for.
+type Transaction struct {
 	// 32 byte address
-	Sender []byte
+	Sender Address
 	// micro-Algos
 	Fee uint64
 	// round number
@@ -17,15 +20,15 @@ type Txn struct {
 	// 32 byte lease value
 	Lease []byte
 	// 32 byte address
-	Receiver []byte
+	Receiver Address
 	// micro-Algos
 	Amount uint64
 	// 32 byte address
-	CloseRemainderTo []byte
+	CloseRemainderTo Address
 	// 32 byte address
-	VotePK []byte
+	VotePK Address
 	// 32 byte address
-	SelectionPK []byte
+	SelectionPK Address
 	// The first round that the participation key is valid.
 	VoteFirst uint64
 	// The last round that the participation key is valid.
@@ -41,11 +44,11 @@ type Txn struct {
 	// value in Asset's units
 	AssetAmount uint64
 	// 32 byte address. Causes clawback of all value of asset from AssetSender if Sender is the Clawback address of the asset.
-	AssetSender []byte
+	AssetSender Address
 	// 32 byte address
-	AssetReceiver []byte
+	AssetReceiver Address
 	// 32 byte address
-	AssetCloseTo []byte
+	AssetCloseTo Address
 	// Position of this transaction within an atomic transaction group. A stand-alone transaction is implicitly element 0 in a group of 1
 	GroupIndex uint64
 	// The computed ID for this transaction. 32 bytes.
@@ -67,7 +70,7 @@ type Txn struct {
 	// Clear state program
 	ClearStateProgram []byte
 	// 32 byte Sender's new AuthAddr
-	RekeyTo []byte
+	RekeyTo Address
 	// Asset ID in asset config transaction
 	ConfigAsset uint64
 	// Total number of units of this asset created
@@ -85,17 +88,17 @@ type Txn struct {
 	// 32 byte commitment to some unspecified asset metadata
 	ConfigAssetMetadataHash []byte
 	// 32 byte address
-	ConfigAssetManager []byte
+	ConfigAssetManager Address
 	// 32 byte address
-	ConfigAssetReserve []byte
+	ConfigAssetReserve Address
 	// 32 byte address
-	ConfigAssetFreeze []byte
+	ConfigAssetFreeze Address
 	// 32 byte address
-	ConfigAssetClawback []byte
+	ConfigAssetClawback Address
 	// Asset ID being frozen or un-frozen
 	FreezeAsset uint64
 	// 32 byte address of the account whose asset slot is being frozen or un-frozen
-	FreezeAssetAccount []byte
+	FreezeAssetAccount Address
 	// The new frozen value, 0 or 1
 	FreezeAssetFrozen uint64
 	// Foreign Assets listed in the ApplicationCall transaction
