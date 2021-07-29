@@ -21,6 +21,10 @@ type Builder struct {
 
 	program *ssa.Program
 	pkgs    []*ssa.Package
+
+	hasStartedProcessingContract bool
+
+	resolved map[string]interface{}
 }
 
 // New returns a new Builder.
@@ -29,6 +33,7 @@ func New() *Builder {
 		pkgCfg: &packages.Config{
 			Mode: packages.LoadSyntax,
 		},
+		resolved: map[string]interface{}{},
 	}
 }
 
