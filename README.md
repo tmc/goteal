@@ -54,7 +54,9 @@ equivalent.
 
 You can output direct bytecode by supplying the `-o bytecode` argument.
 
-# goteal vet
+# Important subcommands
+
+## goteal vet
 
 `goteal` intends to encourage common patterns and warn contract authors about common missteps or
 errors in contract development. The `goteal vet` subcommand will run your contract through several
@@ -64,7 +66,7 @@ static analysis checks to help guide you in your contract authorship.
 
 `goteal vet` will output in a standard format any issues that are detected in your contract design.
 
-# goteal test
+## goteal test
 
 `goteal` leverages the rich testing ecosystem from the Go programming language and makes it easy to
 write tests that verify the behavior of your contract.
@@ -74,3 +76,6 @@ contract via `goteal test`:
 
 **Example usage:** `goteal test github.com/yourname/yourproject/contract1`
 
+# Example Contracts
+
+The [examples](./examples) subdirectory contains a number of example contracts.
