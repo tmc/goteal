@@ -17,8 +17,10 @@ type Builder struct {
 	Debug   bool
 	DumpSSA bool
 
-	pkgCfg  *packages.Config
+	pkgCfg *packages.Config
+
 	program *ssa.Program
+	pkgs    []*ssa.Package
 }
 
 // New returns a new Builder.
@@ -44,20 +46,28 @@ func (b *Builder) LoadSources(sources ...string) error {
 	}
 	mode := ssa.BuilderMode(0)
 	// mode := ssa.PrintPackages
-	b.program, _ = ssautil.AllPackages(initial, mode)
+	b.program, b.pkgs = ssautil.Packages(initial, mode)
 	return nil
 }
 
 // Build assembles a TEAL program from a Go program.
 func (b *Builder) Build() (*teal.Program, error) {
-	for _, pkg := range ssautil.MainPackages(b.program.AllPackages()) {
+	for _, pkg := range b.pkgs {
 		pkg.Build()
 		if b.DumpSSA {
 			buf := new(bytes.Buffer)
 			ssa.WritePackage(buf, pkg)
 			io.Copy(os.Stdout, buf)
 		}
-		return b.convertSSAToTEAL(pkg)
+
+		// check for Contract()
+		hasContract, err := packageDefinesContract(pkg)
+		if err != nil {
+			return nil, fmt.Errorf("supplied package does not export the correct Contract() signature. See https://github.com/tmc/goteal#constraints for details.\n%w", err)
+		}
+		if hasContract {
+			return b.convertSSAToTEAL(pkg)
+		}
 	}
-	return nil, fmt.Errorf("missing main package")
+	return nil, fmt.Errorf("supplied package does not export the correct Contract() signature. See https://github.com/tmc/goteal#constraints for details")
 }
