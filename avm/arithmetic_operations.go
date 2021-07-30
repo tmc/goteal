@@ -1,15 +1,15 @@
 package avm
 
 // Sha256 returns the SHA256 hash of value X.
-func Sha256(X []byte) [32]byte {
+func Sha256(X []byte) []byte {
 	// TODO: implement
-	return [32]byte{}
+	return nil
 }
 
 // Keccak256 returns the Keccak256 hash of value X.
-func Keccak256(X []byte) [32]byte {
+func Keccak256(X []byte) []byte {
 	// TODO: implement
-	return [32]byte{}
+	return nil
 }
 
 // Ed25519verify computes for (data A, signature B, pubkey C) verify the signature of ("ProgData" || program_hash || data) against the pubkey => {0 or 1}.
