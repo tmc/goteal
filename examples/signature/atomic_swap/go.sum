@@ -215,6 +215,10 @@ github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/tmc/goteal v0.0.0-20210729184206-3b89638c9b92 h1:NmIDM1f+TnJSHHRmju2KW1gsFNVQ+0xOzNJzny+bOM0=
 github.com/tmc/goteal v0.0.0-20210729184206-3b89638c9b92/go.mod h1:s5xKwOgDv8LPZL6ZDu2sA51W8I7NZSdw00cro3sRP9s=
+github.com/tmc/goteal v0.0.0-20210730020002-e1111d734a6a h1:SB1S6zZ9/s4+a5JG5FGvU0eos9ujBo6mO05rnyrtzRk=
+github.com/tmc/goteal v0.0.0-20210730020002-e1111d734a6a/go.mod h1:s5xKwOgDv8LPZL6ZDu2sA51W8I7NZSdw00cro3sRP9s=
+github.com/tmc/goteal v0.0.0-20210730021855-85db0fcb02d9 h1:EqND3/1dOsYHMQdr8eOEpVvz+frrv9I2J6yqg5vwXrA=
+github.com/tmc/goteal v0.0.0-20210730021855-85db0fcb02d9/go.mod h1:s5xKwOgDv8LPZL6ZDu2sA51W8I7NZSdw00cro3sRP9s=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
