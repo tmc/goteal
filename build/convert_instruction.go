@@ -110,11 +110,16 @@ func (b *Builder) resolve(x ssa.Value) string {
 	// fmt.Println("resolve:", x.Name(), x.Type(), x.String())
 	// fmt.Printf("typ: %T\n", x.Type())
 
-	prebaked := map[string]string{
-		"&t0.GroupSize [#4]": "global GroupSize",
+	sparts := strings.Split(x.String(), " ")
+	sp1 := sparts[0]
+	dotParts := strings.Split(sp1, ".")
+
+	fieldAccessRoots := map[string]string{
+		"&t0": "global",
+		"&t1": "txn",
 	}
-	if p, ok := prebaked[x.String()]; ok {
-		return p
+	if fa, ok := fieldAccessRoots[dotParts[0]]; ok {
+		return fmt.Sprintf("%v %v", fa, dotParts[1])
 	}
 
 	switch t := x.Type().(type) {
