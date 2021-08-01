@@ -39,9 +39,16 @@ func (b *Builder) convertSSAToTEAL(pkg *ssa.Package) (*teal.Program, error) {
 		case *ssa.Function:
 			err = b.convertSSAFunctionToTEAL(result, m)
 		case *ssa.Global:
-			result.AppendLine(fmt.Sprintf("// global var: %v", m))
+			if b.Debug {
+				result.AppendLine(fmt.Sprintf("// global var: %v %v", m, m.Object()))
+			}
+			// TODO: how to get the actual value to add to b.resolved ?
+			//b.resolved[m.Name()] = m..
 		case *ssa.NamedConst:
-			result.AppendLine(fmt.Sprintf("// named const: %v = %v", m.Name(), m.Value))
+			if b.Debug {
+				result.AppendLine(fmt.Sprintf("// named const: %v = %v", m.Name(), m.Value))
+			}
+			b.resolved[m.Name()] = m.Value
 		default:
 			if b.Debug {
 				fmt.Fprintln(os.Stderr, fmt.Sprintf(" > unhandled type %T", m))
