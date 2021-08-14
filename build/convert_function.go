@@ -27,6 +27,7 @@ func (b *Builder) convertSSAFunctionToTEAL(result *teal.Program, m *ssa.Function
 	// fmt.Fprintln(os.Stderr, "fn to teal:", m)
 	// fmt.Fprintln(os.Stderr, " params :", m.Params)
 	for blockIndex, block := range m.Blocks {
+		ctx := ConvertContext{BlockIndex: blockIndex}
 		if b.Debug {
 			// fmt.Fprintln(os.Stderr, " block :", block.String())
 			// result.AppendLine(fmt.Sprintf("// block: %v", block))
@@ -44,7 +45,7 @@ func (b *Builder) convertSSAFunctionToTEAL(result *teal.Program, m *ssa.Function
 		}
 
 		for _, instr := range block.Instrs {
-			if err := b.convertSSAInstructionToTEAL(result, blockIndex, instr); err != nil {
+			if err := b.convertSSAInstructionToTEAL(ctx, result, instr); err != nil {
 				return err
 			}
 		}
