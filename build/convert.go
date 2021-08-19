@@ -27,12 +27,19 @@ func (b *Builder) convertSSAToTEAL(pkg *ssa.Package) (*teal.Program, error) {
 		// return strings.Compare(members[i].Name(), members[j].Name()) < 0
 		return members[i].Pos() <= members[j].Pos()
 	})
+
+	var err error
+	b.phis, err = collectPhiNodesFromMembers(members)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(len(b.phis), "phi nodes collected")
 	for _, m := range members {
 		// TODO: support init guarding
 		if m.Name() == "init$guard" {
 			continue
 		}
-		if b.Debug {
+		if b.DebugLevel > 0 {
 			fmt.Printf(" > member: %s: %v: %T\n", m.Name(), m, m.Type())
 		}
 		var err error
@@ -89,7 +96,7 @@ func (b *Builder) convertSSAToTEAL(pkg *ssa.Package) (*teal.Program, error) {
 			// gPos := m.Pos()
 			// P2 := pkg.Prog.Fset.Position(gPos)
 			// spew.Dump(gPos, P2)
-			if b.Debug {
+			if b.DebugLevel > 0 {
 				result.AppendLine(fmt.Sprintf("// global var: %v %v", m, m.Object()))
 			}
 			// v, ok := m.Object().(*types.Var)
@@ -108,12 +115,12 @@ func (b *Builder) convertSSAToTEAL(pkg *ssa.Package) (*teal.Program, error) {
 			// TODO: how to get the actual value to add to b.resolved ?
 			//b.resolved[m.Name()] = m..
 		case *ssa.NamedConst:
-			if b.Debug {
+			if b.DebugLevel > 0 {
 				result.AppendLine(fmt.Sprintf("// named const: %v = %v", m.Name(), m.Value))
 			}
 			b.resolved[m.Name()] = m.Value
 		default:
-			if b.Debug {
+			if b.DebugLevel > 0 {
 				fmt.Fprintln(os.Stderr, fmt.Sprintf(" > unhandled type %T", m))
 			}
 			err = fmt.Errorf("unhandled type %T", m)

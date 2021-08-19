@@ -13,7 +13,7 @@ func (b *Builder) convertSSAFunctionToTEAL(result *teal.Program, m *ssa.Function
 
 	name := strings.ToLower(m.Name())
 	// TODO: extract and preserve function comment.
-	if b.Debug {
+	if b.DebugLevel > 0 {
 		result.AppendLine(fmt.Sprintf("%s: // %v", name, m.Signature))
 	} else {
 		result.AppendLine(fmt.Sprintf("%s:", name))
@@ -28,13 +28,13 @@ func (b *Builder) convertSSAFunctionToTEAL(result *teal.Program, m *ssa.Function
 	// fmt.Fprintln(os.Stderr, " params :", m.Params)
 	for blockIndex, block := range m.Blocks {
 		ctx := ConvertContext{BlockIndex: blockIndex}
-		if b.Debug {
+		if b.DebugLevel > 0 {
 			// fmt.Fprintln(os.Stderr, " block :", block.String())
 			// result.AppendLine(fmt.Sprintf("// block: %v", block))
 		}
 
 		if block.Comment != "entry" {
-			result.AppendLine(fmt.Sprintf("// %v", block.Comment))
+			result.AppendLine(fmt.Sprintf("// block %v: %v", blockIndex, block.Comment))
 			result.AppendLine(fmt.Sprintf("%v.block.%v:", name, blockIndex))
 		}
 
@@ -50,8 +50,19 @@ func (b *Builder) convertSSAFunctionToTEAL(result *teal.Program, m *ssa.Function
 			}
 		}
 
-		if b.Debug {
-			// result.AppendLine(fmt.Sprintf("// endblock: %v", block))
+		// look up if a Phi node refers to this block and store a value if so.
+
+		phis := phiReferrers(block, b.phis)
+		for _, phi := range phis {
+			if b.DebugLevel > 0 {
+				result.AppendLine(fmt.Sprintf("// store phi node %v %v", phi.Name(), phi.v))
+			}
+			phiReg := strings.TrimLeft(phi.Name(), "t")
+			result.AppendLine(b.resolve(phi.v))
+			result.AppendLine(fmt.Sprintf("store %v", phiReg))
+		}
+		if b.DebugLevel > 1 {
+			result.AppendLine(fmt.Sprintf("// endblock: %v", block))
 		}
 	}
 	return nil

@@ -13,7 +13,7 @@ func (b *Builder) convertSSAInitFunctionToTEAL(result *teal.Program, m *ssa.Func
 
 	name := strings.ToLower(m.Name())
 	// TODO: extract and preserve function comment.
-	if b.Debug {
+	if b.DebugLevel > 0 {
 		result.AppendLine(fmt.Sprintf("// processing %v", name))
 	}
 
@@ -24,7 +24,7 @@ func (b *Builder) convertSSAInitFunctionToTEAL(result *teal.Program, m *ssa.Func
 			BlockIndex: blockIndex,
 			IsInit:     true,
 		}
-		if b.Debug {
+		if b.DebugLevel > 0 {
 			// fmt.Fprintln(os.Stderr, " block :", block.String())
 			// result.AppendLine(fmt.Sprintf("// block: %v", block))
 		}
@@ -42,7 +42,7 @@ func (b *Builder) convertSSAInitFunctionToTEAL(result *teal.Program, m *ssa.Func
 			}
 		}
 
-		if b.Debug {
+		if b.DebugLevel > 0 {
 			// result.AppendLine(fmt.Sprintf("// endblock: %v", block))
 		}
 	}

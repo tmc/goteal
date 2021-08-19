@@ -2,7 +2,6 @@ package build
 
 import (
 	"fmt"
-	"go/types"
 	"strings"
 
 	"github.com/tmc/goteal/teal"
@@ -28,13 +27,15 @@ type ConvertContext struct {
 }
 
 func (b *Builder) convertSSAInstructionToTEAL(ctx ConvertContext, result *teal.Program, i ssa.Instruction) error {
-	// result.AppendLine(fmt.Sprintf("\n// inst: %v", i))
+	if b.DebugLevel > 0 {
+		result.AppendLine(fmt.Sprintf("// inst: %v %T", i, i))
+	}
 	if handler, ok := specialCaseInstructions[i.String()]; ok {
 		return handler(result, i)
 	}
 	switch i := i.(type) {
 	case *ssa.BinOp:
-		if b.Debug {
+		if b.DebugLevel > 0 {
 			result.AppendLine(fmt.Sprintf("// binop: %v = %v", i.Name(), i))
 		}
 		// spew.Dump("x:", i.Parent().ValueForExpr(i.X.Pos()))
@@ -44,7 +45,7 @@ func (b *Builder) convertSSAInstructionToTEAL(ctx ConvertContext, result *teal.P
 		result.AppendLine(fmt.Sprintf("%v", i.Op))
 		// b.resolved[i.Name()] =
 	case *ssa.FieldAddr:
-		if b.Debug {
+		if b.DebugLevel > 0 {
 			result.AppendLine(fmt.Sprintf("// fieldaddr: %v = %v", i.Name(), i))
 		}
 		if err := b.convertSSAFieldAddrToTEAL(result, i); err != nil {
@@ -55,27 +56,27 @@ func (b *Builder) convertSSAInstructionToTEAL(ctx ConvertContext, result *teal.P
 			return fmt.Errorf("issue converting call: %w", err)
 		}
 	case *ssa.Store:
-		if b.Debug {
+		if b.DebugLevel > 0 {
 			result.AppendLine(fmt.Sprintf("// store: %v", i))
 		}
 		b.resolved[i.Addr.Name()] = i.Val
-		if b.Debug {
+		if b.DebugLevel > 1 {
 			result.AppendLine(fmt.Sprintf("// stored: %q", b.resolved))
 		}
 	case *ssa.UnOp:
-		if b.Debug {
+		if b.DebugLevel > 0 {
 			result.AppendLine(fmt.Sprintf("// unop: %v = %v", i.Name(), i))
 			result.AppendLine(fmt.Sprintf("// unop: x: %v", i.X))
 			result.AppendLine(fmt.Sprintf("// unop: x type: %v", i.X.Type()))
 		}
 		b.resolved[i.Name()] = b.resolve(i.X)
 	case *ssa.Alloc:
-		if b.Debug {
+		if b.DebugLevel > 0 {
 			result.AppendLine(fmt.Sprintf("// alloc: %v = %v", i.Name(), i))
 		}
 		b.resolved[i.Name()] = i
 	case *ssa.If:
-		if b.Debug {
+		if b.DebugLevel > 0 {
 			result.AppendLine(fmt.Sprintf("// if: %v", i))
 		}
 		rands := i.Operands(nil)
@@ -108,7 +109,7 @@ func (b *Builder) convertSSAInstructionToTEAL(ctx ConvertContext, result *teal.P
 			result.AppendLine("retsub")
 		}
 	case *ssa.Convert:
-		if b.Debug {
+		if b.DebugLevel > 0 {
 			result.AppendLine(fmt.Sprintf("// convert: %v to %v", i.X, i.Type()))
 		}
 		result.AppendLine(fmt.Sprintf("// convert: %v to %v", i.X, i.Type()))
@@ -116,61 +117,19 @@ func (b *Builder) convertSSAInstructionToTEAL(ctx ConvertContext, result *teal.P
 		if ctx.IsInit {
 			return nil
 		}
-		if b.Debug {
+		if b.DebugLevel > 0 {
 			result.AppendLine(fmt.Sprintf("// jump: %v", i))
 		}
+		fnName := strings.ToLower(i.Parent().Name())
+		result.AppendLine(fmt.Sprintf("b %v.block.%v", fnName, i.Block().Succs[0].Index))
+	case *ssa.Phi:
+		if b.DebugLevel > 0 {
+			result.AppendLine(fmt.Sprintf("// ɸ %v %v", i.Name(), i))
+		}
+		// phiReg := strings.TrimLeft(i.Name(), "t")
+		// result.AppendLine(fmt.Sprintf("load %v", phiReg))
 	default:
 		result.AppendLine(fmt.Sprintf("// convertSSAInstructionToTEAL: unexpected type: %T - %v", i, i))
 	}
 	return nil
-}
-
-// resolve produces a TEAL-compatible representation of an ssa.Value.
-func (b *Builder) resolve(v ssa.Value) string {
-	if b.Debug {
-		fmt.Println("-> resolve()", v.Name())
-	}
-	//fmt.Println(b.resolved)
-	value := v
-	// first check if we already have a value resolved
-	r, ok := b.resolved[value.Name()]
-	if ok {
-		if s, ok := r.(string); ok {
-			return s
-		}
-		value, ok = r.(ssa.Value)
-		if !ok {
-			return fmt.Sprintf("err // issue with resolved value: %v %v %T", value.Name(), r, r)
-		}
-	}
-	switch v := value.(type) {
-	case *ssa.Const:
-		return fmt.Sprintf("%v %v", v.Type().Underlying(), v.Value.ExactString())
-		// default:
-		//return "err // unkown type " + fmt.Sprintf("%T", v)
-	}
-
-	sparts := strings.Split(value.String(), " ")
-	sp1 := sparts[0]
-	dotParts := strings.Split(sp1, ".")
-
-	// TODO: this is pretty gross special-casing.
-
-	fieldAccessRoots := map[string]string{
-		"&t0": "global",
-		"&t1": "txn",
-	}
-	if fa, ok := fieldAccessRoots[dotParts[0]]; ok {
-		return fmt.Sprintf("%v %v", fa, dotParts[1])
-	}
-
-	switch t := value.Type().(type) {
-	case *types.Pointer:
-		return fmt.Sprintf("pointer %v", value)
-	case *types.Basic:
-		val := strings.Split(value.String(), ":")[0]
-		return fmt.Sprintf("int %v", val)
-	default:
-		return fmt.Sprintf("err // failed to resolve %v", t)
-	}
 }

@@ -28,7 +28,7 @@ func (b *Builder) convertSSACallToTEAL(ctx ConvertContext, result *teal.Program,
 			return nil
 		}
 	}
-	if b.Debug {
+	if b.DebugLevel > 1 {
 		result.AppendLine(fmt.Sprintf("// isinit? %v", ctx.IsInit))
 		result.AppendLine(fmt.Sprintf("// call: %v = %v", i.Name(), i))
 	}
