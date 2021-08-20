@@ -58,7 +58,7 @@ type Transaction struct {
 	// ApplicationCall transaction on completion action
 	OnCompletion uint64
 	// Arguments passed to the application in the ApplicationCall transaction
-	ApplicationArgs []byte
+	ApplicationArgs []string
 	// Number of ApplicationArgs
 	NumAppArgs uint64
 	// Accounts listed in the ApplicationCall transaction
