@@ -119,6 +119,10 @@ func (b *Builder) convertSSAToTEAL(pkg *ssa.Package) (*teal.Program, error) {
 				result.AppendLine(fmt.Sprintf("// named const: %v = %v", m.Name(), m.Value))
 			}
 			b.resolved[m.Name()] = m.Value
+		case *ssa.Type:
+			if b.DebugLevel > 0 {
+				result.AppendLine(fmt.Sprintf("// type: %v", m))
+			}
 		default:
 			if b.DebugLevel > 0 {
 				fmt.Fprintln(os.Stderr, fmt.Sprintf(" > unhandled type %T", m))
