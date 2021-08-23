@@ -23,35 +23,115 @@ func (b *Builder) convertSSAToTEAL(pkg *ssa.Package) (*teal.Program, error) {
 	}
 
 	sort.Slice(members, func(i, j int) bool {
-		return members[i].Pos() < members[j].Pos()
+		// fmt.Println("sorting:", i, j, "pos:", members[i].Pos(), members[j].Pos())
+		// return strings.Compare(members[i].Name(), members[j].Name()) < 0
+		return members[i].Pos() <= members[j].Pos()
 	})
+
+	var err error
+	b.phis, err = collectPhiNodesFromMembers(members)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(len(b.phis), "phi nodes collected")
 	for _, m := range members {
-		// TODO: support init
-		if m.Name() == "init" || m.Name() == "init$guard" {
+		// TODO: support init guarding
+		if m.Name() == "init$guard" {
 			continue
 		}
-		if b.Debug {
-			fmt.Println(" > member:", m.Name(), m.Type())
+		if b.DebugLevel > 0 {
+			fmt.Printf(" > member: %s: %v: %T\n", m.Name(), m, m.Type())
 		}
-
 		var err error
 		switch m := m.(type) {
 		case *ssa.Function:
-			err = b.convertSSAFunctionToTEAL(result, m)
+			// init is processed in a special fashion as it is where global vars are set.
+
+			if m.Name() == "init" {
+				err = b.convertSSAInitFunctionToTEAL(result, m)
+			} else {
+				err = b.convertSSAFunctionToTEAL(result, m)
+			}
 		case *ssa.Global:
-			result.AppendLine(fmt.Sprintf("// global var: %v", m))
+			//fmt.Println("got a global:", m.Name(), m.Type())
+			if _, ok := b.resolved[m.Name()]; !ok {
+				b.resolved[m.Name()] = nil
+			}
+			// fmt.Println("val ?:", m.Type().Underlying().(*types.Pointer).Elem().Underlying())
+
+			/*
+				fmt.Println("deets:")
+				fmt.Println(m.Name())
+				fmt.Println(m.Object())
+				// fmt.Println(m.Operands(r))
+				fmt.Println(m.Package())
+				fmt.Println(m.Parent())
+				fmt.Println(m.Pos())
+				fmt.Println(m.Referrers())
+				// fmt.Println(m.RelString(f))
+				fmt.Println(m.String())
+				fmt.Println(m.Token())
+				fmt.Println(m.Type())
+			*/
+
+			// fset := pkg.Prog.Fset
+			// f, err := parser.ParseFile(fset, "src.go", src, 0)
+			// if err != nil {
+			// panic(err)
+			// }
+			// ast.Inspect(pkg.Prog.Fset, func(n ast.Node) bool {
+			// 	var s string
+			// 	switch x := n.(type) {
+			// 	case *ast.BasicLit:
+			// 		s = x.Value
+			// 	case *ast.Ident:
+			// 		s = x.Name
+			// 	}
+			// 	if s != "" {
+			// 		fmt.Printf("%s:\t%s\n", fset.Position(n.Pos()), s)
+			// 	}
+			// 	return true
+			// })
+
+			// gPos := m.Pos()
+			// P2 := pkg.Prog.Fset.Position(gPos)
+			// spew.Dump(gPos, P2)
+			if b.DebugLevel > 0 {
+				result.AppendLine(fmt.Sprintf("// global var: %v %v", m, m.Object()))
+			}
+			// v, ok := m.Object().(*types.Var)
+			// if ok {
+			// 	// result.AppendLine(fmt.Sprintf("// le var: %v", v))
+			// 	// result.AppendLine(fmt.Sprintf("// le st: %v", v.String()))
+			// 	// x, err := pkg.Prog.VarValue(v, pkg, nil)
+
+			// 	// fm := pkg.Members[v.Name()]
+			// 	// result.AppendLine(fmt.Sprintf("// from members: %v", fm))
+			// 	// fv := pkg.Var(v.Name())
+			// 	// result.AppendLine(fmt.Sprintf("// from var(): %v", fv))
+			// 	// result.AppendLine(fmt.Sprintf("// le var: %v %T", x, x))
+			// 	// result.AppendLine(fmt.Sprintf("// le err?: %v", err))
+			// }
+			// TODO: how to get the actual value to add to b.resolved ?
+			//b.resolved[m.Name()] = m..
 		case *ssa.NamedConst:
-			result.AppendLine(fmt.Sprintf("// named const: %v = %v", m.Name(), m.Value))
+			if b.DebugLevel > 0 {
+				result.AppendLine(fmt.Sprintf("// named const: %v = %v", m.Name(), m.Value))
+			}
+			b.resolved[m.Name()] = m.Value
+		case *ssa.Type:
+			if b.DebugLevel > 0 {
+				result.AppendLine(fmt.Sprintf("// type: %v", m))
+			}
 		default:
-			if b.Debug {
+			if b.DebugLevel > 0 {
 				fmt.Fprintln(os.Stderr, fmt.Sprintf(" > unhandled type %T", m))
 			}
-			//err = fmt.Errorf("unhandled type %T", m)
+			err = fmt.Errorf("unhandled type %T", m)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("issue converting %v: %w", m, err)
 		}
 	}
-	// TODO: switch on *NamedConst, *Global, *Function, or *Type
 	return result, nil
 }

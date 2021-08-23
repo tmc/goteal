@@ -8,8 +8,10 @@ import (
 	"github.com/tmc/goteal/build"
 )
 
+var debugLevel int
+
 func init() {
-	buildCmd.Flags().BoolP("debug", "d", false, "if true, prints additional debugging output")
+	buildCmd.Flags().IntVarP(&debugLevel, "debug", "d", 0, "sets debug level, prints additional debugging output")
 	buildCmd.Flags().Bool("dump-ssa", false, "if true, dump the SSA representation of the program")
 }
 
@@ -22,7 +24,7 @@ var buildCmd = &cobra.Command{
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
-		b.Debug = cmd.Flags().Lookup("debug").Value.String() == "true"
+		b.DebugLevel = debugLevel
 		b.DumpSSA = cmd.Flags().Lookup("dump-ssa").Value.String() == "true"
 		prg, err := b.Build()
 		if err != nil {

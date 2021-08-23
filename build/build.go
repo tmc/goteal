@@ -14,17 +14,26 @@ import (
 
 // Builder handles the loading and compilation of a Go program to TEAL.
 type Builder struct {
-	Debug   bool
-	DumpSSA bool
+	DebugLevel int
+	DumpSSA    bool
 
 	pkgCfg *packages.Config
 
 	program *ssa.Program
 	pkgs    []*ssa.Package
+	phis    []*Phi
 
 	hasStartedProcessingContract bool
 
 	resolved map[string]interface{}
+}
+
+type Phi struct {
+	*ssa.Phi
+	i ssa.Instruction
+
+	// only populated in some cases
+	v ssa.Value
 }
 
 // New returns a new Builder.
